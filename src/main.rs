@@ -20,8 +20,8 @@ use std::time::Duration;
 use std::{env, fs, io};
 use uuid::Uuid;
 
-// const GS: &str = "/opt/gs";
-const GS: &str = "gswin64c";
+const GS: &str = "/opt/gs";
+// const GS: &str = "gswin64c";
 
 #[derive(PartialEq, Eq, Deserialize, Clone)]
 enum CaptureType {
@@ -252,7 +252,7 @@ async fn capture(
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let (browser, mut handler) = Browser::launch(
         BrowserConfig::builder()
-            // .chrome_executable("/opt/chromium")
+            .chrome_executable("/opt/chromium")
             .args([
                 "--allow-pre-commit-input",
                 "--disable-background-networking",
