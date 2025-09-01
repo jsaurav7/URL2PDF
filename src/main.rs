@@ -20,8 +20,8 @@ use std::time::Duration;
 use std::{env, fs, io};
 use uuid::Uuid;
 
-const GS: &str = "/opt/gs";
-// const GS: &str = "gswin64c";
+// const GS: &str = "/opt/gs";
+const GS: &str = "gswin64c";
 
 #[derive(PartialEq, Eq, Deserialize, Clone)]
 enum CaptureType {
@@ -113,13 +113,14 @@ fn merge_pdfs(input_files: &[String], output_file: &str) -> io::Result<()> {
 }
 
 fn compress_pdf(file_path: &PathBuf) -> io::Result<PathBuf> {
+    println!("compressing {}", file_path.to_string_lossy());
     let compressed_dir = Path::new("/tmp/compressed_chunks");
 
     if !compressed_dir.exists() {
         fs::create_dir_all(compressed_dir)?;
     }
 
-    let compressed_file = compressed_dir.join(file_path);
+    let compressed_file = compressed_dir.join(file_path.file_name().unwrap());
 
     let status = Command::new(GS)
         .args([
@@ -135,6 +136,7 @@ fn compress_pdf(file_path: &PathBuf) -> io::Result<PathBuf> {
         .status()?;
 
     if status.success() {
+        println!("compressed {}", file_path.to_string_lossy());
         Ok(compressed_file)
     } else {
         Err(io::Error::new(
@@ -250,7 +252,7 @@ async fn capture(
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let (browser, mut handler) = Browser::launch(
         BrowserConfig::builder()
-            .chrome_executable("/opt/chromium")
+            // .chrome_executable("/opt/chromium")
             .args([
                 "--allow-pre-commit-input",
                 "--disable-background-networking",
@@ -342,8 +344,12 @@ mod tests {
             .await
             .unwrap();
 
-        let _ = upload(data, &env::var("BUCKET").unwrap(), CaptureType::PDF)
-            .await
-            .unwrap();
+        let _ = upload(
+            split_compress_pdf(data).await.unwrap(),
+            &env::var("BUCKET").unwrap(),
+            CaptureType::PDF,
+        )
+        .await
+        .unwrap();
     }
 }
