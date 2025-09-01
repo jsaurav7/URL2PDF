@@ -47,6 +47,7 @@ jobs:
           rm -rf $OUT && mkdir -p $OUT
           cp target/x86_64-unknown-linux-musl/release/$BINARY $OUT/bootstrap
           chmod +x $OUT/bootstrap
+          strip $OUT/bootstrap
           cd $OUT && zip ../lambda-x86_64.zip bootstrap
 
       - name: Upload artifact
